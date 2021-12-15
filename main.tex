@@ -118,7 +118,7 @@
 \begin{frame}{Rellenado con ceros (I)}\medskip
     Sean $A$ y $B$ de longitud $M$. 
     
-    Rellenamos con ceros hasta $\ell = 2^k > 2M$: 
+    Rellenamos con ceros hasta $\ell = 2^x > 2M$: 
     \begin{equation*}
         \mathcal{A} = A + [0]*(\ell - M)\ \qquad 
         \mathcal{B} = B + [0]*(\ell - M)
@@ -131,7 +131,7 @@
     
     Si $i<M$ entonces $j>=M$, y viceversa:
     \begin{equation*}
-        j = k+\ell-i > k+2M-M= k + M >= M
+        j = k+\ell-i > k+2M-M= k + M \geq M
     \end{equation*}
     
 \end{frame}
@@ -181,7 +181,7 @@ Reemplazando $jk$ por la siguiente identidad:
 \end{equation*}
 Se obtiene:
 \begin{equation*}
-    \DFT(P,\xi)_{(j)}=\sum\limits_{k=0}^{N-1} a_k \cdot\xi^{( \frac{k^2+j^2-(j-k)^2}{2})} = \sum\limits_{k=0}^{N-1} a_k \cdot\xi^{\frac{-k^2}{2}} \cdot\xi ^ {\frac{-j^2}{2}} \cdot\xi ^{\frac{(j-k)^2}{2}} =
+    \DFT(P,\xi)_{(j)}=\sum\limits_{k=0}^{N-1} a_k \cdot\xi^{-( \frac{k^2+j^2-(j-k)^2}{2})} = \sum\limits_{k=0}^{N-1} a_k \cdot\xi^{\frac{-k^2}{2}} \cdot\xi ^ {\frac{-j^2}{2}} \cdot\xi ^{\frac{(j-k)^2}{2}} =
 \end{equation*}
 \begin{equation*}
      = \boxed{\xi ^{\frac{-j^2}{2}} \cdot \sum\limits_{k=0}^{N-1} (a_k \cdot\xi ^ {\frac{-k^2}{2}}) \cdot \xi^{ \frac{(j-k)^2}{2}} }
