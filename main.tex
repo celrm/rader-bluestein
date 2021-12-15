@@ -1,0 +1,228 @@
+% https://github.com/martinhelso/UiB
+
+
+\documentclass[spanish]{beamer}
+\usepackage[spanish]{babel}
+\usetheme{UiB}
+
+
+\usepackage[utf8]{inputenx} % For æ, ø, å
+\usepackage{csquotes}       % Quotation marks
+\usepackage{microtype}      % Improved typography
+\usepackage{amssymb}        % Mathematical symbols
+\usepackage{mathtools}      % Mathematical symbols
+\usepackage[absolute, overlay]{textpos} % Arbitrary placement
+\setlength{\TPHorizModule}{\paperwidth} % Textpos units
+\setlength{\TPVertModule}{\paperheight} % Textpos units
+\usepackage{tikz}
+\usetikzlibrary{overlay-beamer-styles}  % Overlay effects for TikZ
+
+
+\author{María Arranz y Celia Rubio}
+\title{Transformada rápida de Fourier}
+\subtitle{Métodos de Rader y Bluestein}
+\date{Rader y Bluestein}
+
+\usepackage{faktor}
+\newcommand{\DFT}{\text{DFT}}
+\newcommand{\IDFT}{\text{IDFT}}
+\usepackage{cancel}
+
+\begin{document}
+
+
+\section{Introducción}
+\begin{frame}{Índice}
+    \tableofcontents
+\end{frame}
+
+\begin{frame}{Introducción}
+    Sea el polinomio $P(x)=\sum\limits_{i=0}^{N-1}a_i\cdot x^i$.
+
+    \begin{definition}
+    $\DFT(P,\xi) = \left(P(1),P(\xi),P(\xi^2)...\right) = D(\xi)\cdot (a_0,a_1,a_2...)$\\[\bigskipamount]
+    donde $D(\xi)_{(i,j)}=\xi^{ij}$ para $i,j\in\{0,...,N-1\}$. 
+    \end{definition}
+    
+    Es decir,  para $j\in\{0,...,N-1\}$:
+    \begin{equation*}
+    \DFT(P,\xi)_{(j)}=\sum\limits_{k=0}^{N-1} a_k \cdot\xi^{jk}
+    \end{equation*}
+    
+    En clase hemos visto Cooley–Tukey para $N$ potencia de $2$:
+    \begin{equation*}
+        \DFT(P,\xi)_{(j)}=P(\xi^j)=P_{par}(\xi^{2j})+\xi^j\cdot P_{impar}(\xi^{2j})
+    \end{equation*}
+\end{frame}
+
+\section{Método de Rader}
+
+\begin{frame}{Método de Rader (I)}\medskip
+
+    Si $N$ primo $\implies$
+    $\left(\faktor{\mathbb{Z}}{N\mathbb{Z}}\right)^*$ es el grupo cíclico $C_{N-1}$ de orden $N-1$.\\[\smallskipamount]
+    \begin{itemize}
+        \item Tiene un generador $g$ de orden $N-1$.
+        \item $g^{-1}$ también es un generador.
+    \end{itemize}\bigskip
+    
+    Retomando la fórmula:
+    \begin{equation*}
+        \DFT(P,\xi)_{(j)}=\sum\limits_{k=0}^{N-1} a_k \cdot\xi^{jk}
+    \end{equation*}
+    
+    En concreto, $\DFT(P,\xi)_{(0)}=P(1)=\sum\limits_{k=0}^{N-1} a_k $.\\[\bigskipamount]
+    
+    El resto de índices $j\in\{1,...,N-1\}$ los vemos dentro de $C_{N-1}$. 
+\end{frame}
+
+\begin{frame}{Método de Rader (II)}
+    \begin{equation*}
+        \DFT(P,\xi)_{(j)}=a_0+\sum\limits_{k=1}^{N-1} a_k \cdot\xi^{jk},\quad j\in\{1,...,N-1\}
+    \end{equation*}
+    Los índices $k$ también los vemos dentro de $C_{N-1}$.\\[\smallskipamount]
+    \begin{itemize}
+        \item Escribimos $k$ como potencia de $g$:\qquad
+            $k=g^{q_k}$
+        \item Escribimos $j$ como potencia de $g^{-1}$:\qquad 
+            $j=(g^{-1})^{p_j}=g^{-p_j}$
+    \end{itemize}\medskip
+    
+    $j\mapsto p_j$ y $k\mapsto q_k$ son biyecciones, con $p_j,q_k = 0,...,N-2$.\bigskip
+    
+    Reescribimos la fórmula (quito subíndices para aligerar):
+    \begin{equation*}
+        \DFT(P,\xi)_{(g^{-p})}=a_0+\sum_{q=0}^{N-2} a_{g^{q}} \cdot\xi^{g^{-(p-q)}}
+    \end{equation*}
+\end{frame}
+
+\begin{frame}{Método de Rader (III)}
+    \begin{equation*}
+        \DFT(P,\xi)_{(g^{-p})}=a_0+\sum_{q=0}^{N-2} a_{g^{q}} \cdot\xi^{g^{-(p-q)}}
+    \end{equation*}
+    Es la convolución cíclica de $u(n) = \xi^{g^{-n}}$ y $v(m)=a_{g^m}$.
+    \begin{equation*}
+        (u*v)_p = \sum\limits_{\substack{n+m\equiv p\ (\text{mod}\ N-1)\\ n,m=0}}^{N-2}u(n)\cdot v(m)
+        =(\IDFT\left(\DFT(u)\cdot\DFT(v)\right))_p
+    \end{equation*}
+    
+    ¿Cómo lo calculamos? Necesitamos:
+    \begin{itemize}
+        \item \textbf{Alargar con ceros} $u$ y $v$ para que tengan longitud potencia de 2.
+        \item Que la solución resultante vuelva a tener longitud $N-1$.
+    \end{itemize} 
+\end{frame}
+
+\section{Rellenado con ceros}
+
+\begin{frame}{Rellenado con ceros (I)}\medskip
+    Sean $A$ y $B$ de longitud $M$. 
+    
+    Rellenamos con ceros hasta $\ell = 2^k > 2M$: 
+    \begin{equation*}
+        \mathcal{A} = A + [0]*(\ell - M)\ \qquad 
+        \mathcal{B} = B + [0]*(\ell - M)
+    \end{equation*}
+    Hacemos la convolución de las extensiones $\mathcal{A}$ y $\mathcal{B}$:
+    \begin{equation*}
+        (\mathcal{A}*\mathcal{B})_k = \sum_{i+j=k} \mathcal{A}_i \cdot \mathcal{B}_j + \cancelto{0}{\sum_{i+j=k+\ell} \mathcal{A}_i \cdot \mathcal{B}_j}
+    \end{equation*}
+    El segundo sumatorio tiene todos sus términos nulos. 
+    
+    Si $i<M$ entonces $j>=M$, y viceversa:
+    \begin{equation*}
+        j = k+\ell-i > k+2M-M= k + M >= M
+    \end{equation*}
+    
+\end{frame}
+
+\begin{frame}{Rellenado con ceros (II)}\medskip
+    Además, si $i$ o $j >= M$ entonces el sumando es 0, así que los índices solo llegan hasta $M-1$.
+    \begin{equation*}
+        (\mathcal{A}*\mathcal{B})_k = \sum_{i+j=k} \mathcal{A}_i \cdot \mathcal{B}_j = \sum_{i+j=k} A_i \cdot B_j
+    \end{equation*}
+    ¿Cómo se recupera entonces la convolución original?
+    \begin{equation*}
+        (A*B)_k = \sum_{i+j=k} A_i\cdot B_j + \sum_{i+j=k+M} A_i\cdot B_j
+    \end{equation*}
+    \begin{equation*}
+        = (\mathcal{A}*\mathcal{B})_k + (\mathcal{A}*\mathcal{B})_{k+M}
+    \end{equation*}
+    
+\end{frame}
+
+
+\section{Método de Bluestein}
+
+%\begin{frame}{Método de Bluestein}
+%\url{https://en.wikipedia.org/wiki/Chirp_Z-transform\#Bluestein.27s_algorithm}
+%\url{https://ccrma.stanford.edu/~jos/st/Bluestein_s_FFT_Algorithm.html}
+%\end{frame}
+
+\begin{frame}{Método de Bluestein (I): CZT}
+La transformada Z chirp (CZT) 
+\begin{itemize}
+    \item Generalización de la DFT, tomando puntos sobre arcos espirales en el $Z$-plano (lineas rectas en el $S$-plano)
+\end{itemize}
+    \begin{definition}
+    Sea $X_k = CZT_k$ para $A$, $W$ y $M$ dados:\\
+    $X_k = \sum\limits_{n=0}^{N-1} x(n) z^{-n}_{k}\ \ \ \ \ z_k=A \cdot W^{-k}, k = 0,\dots, M-1$\\
+    $A$ número complejo de partida, W ratio complejo entre puntos, M número de puntos a calcular.
+    \end{definition}
+\end{frame}
+
+\begin{frame}{Bluestein (II)}
+\begin{equation*}
+\DFT(P,\xi)_{(j)}=\sum\limits_{k=0}^{N-1} a_k \cdot\xi^{-jk}
+\end{equation*}
+Reemplazando $jk$ por la siguiente identidad:
+\begin{equation*}
+    jk = \frac{k^2+j^2-(j-k)^2}{2}
+\end{equation*}
+Se obtiene:
+\begin{equation*}
+    \DFT(P,\xi)_{(j)}=\sum\limits_{k=0}^{N-1} a_k \cdot\xi^{( \frac{k^2+j^2-(j-k)^2}{2})} = \sum\limits_{k=0}^{N-1} a_k \cdot\xi^{\frac{-k^2}{2}} \cdot\xi ^ {\frac{-j^2}{2}} \cdot\xi ^{\frac{(j-k)^2}{2}} =
+\end{equation*}
+\begin{equation*}
+     = \boxed{\xi ^{\frac{-j^2}{2}} \cdot \sum\limits_{k=0}^{N-1} (a_k \cdot\xi ^ {\frac{-k^2}{2}}) \cdot \xi^{ \frac{(j-k)^2}{2}} }
+\end{equation*}
+\end{frame}
+
+
+\begin{frame}{Bluestein (III)}
+\begin{equation*}
+      \DFT(P,\xi)_{(j)}= \xi ^{\frac{-j^2}{2}} \cdot \sum\limits_{k=0}^{N-1} (a_k \cdot\xi ^ {\frac{-k^2}{2}}) \cdot \xi^{ \frac{(j-k)^2}{2}}
+\end{equation*}
+
+Que es una convolución de las secuencias $u(n)$ y $v(n)$ dadas por:
+\begin{equation*}
+    u(n)= a_n \cdot\xi ^ {\frac{-n^2}{2}}
+\end{equation*}
+\begin{equation*}
+    v(n) = \xi ^ { \frac{n^2}{2}}
+\end{equation*}
+Con el resultado de la convolución multiplicado por $N$ factores $v^{*}(j)$, $j\in\{0,...,N-1\}$. Esto es:
+
+\begin{equation*}
+      \DFT(P,\xi)_{(j)} =  v^{*}(j) \left(\sum\limits_{k=0}^{N-1} u(k) \cdot v(j-k)\right) =  v^{*}(j)(u * v)_j
+\end{equation*}
+
+\end{frame}
+\begin{frame}{Bluestein (IV)}
+    Por el teorema de convolución, se tiene, por tanto:
+    
+\begin{equation*}
+    \DFT(P,\xi)_{(j)} =  v^{*}(j)(u * v)_j =   v^{*}(j) \cdot (\IDFT (\DFT(u) \cdot \DFT(v)))_j
+\end{equation*}
+\begin{equation*}
+    j\in\{0,...,N-1\}
+\end{equation*}
+
+De manera más abreviada:
+\begin{equation*}
+    \DFT(P,\xi) =  v^{*} \cdot (u * v) =   v^{*} \cdot \IDFT (\DFT(u) \cdot \DFT(v))
+\end{equation*}
+
+Con lo que se obtiene una implementacion de complejidad $\mathcal{O}(n\log{}n)$
+\end{frame}
+\end{document}
