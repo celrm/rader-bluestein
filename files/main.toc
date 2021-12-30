@@ -1,5 +1,0 @@
-\babel@toc {spanish}{}
-\beamer@sectionintoc {1}{Introducción}{2}{0}{1}
-\beamer@sectionintoc {2}{Método de Rader}{4}{0}{2}
-\beamer@sectionintoc {3}{Rellenado con ceros}{7}{0}{3}
-\beamer@sectionintoc {4}{Método de Bluestein}{9}{0}{4}
